@@ -1,0 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Libre+Baskerville:wght@400;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply min-h-screen bg-paper font-body text-ink antialiased;
+}
+
+#root {
+  @apply min-h-screen;
+}
+
+::selection {
+  background: rgba(185, 28, 28, 0.15);
+}
+
+.panel {
+  @apply rounded-none border border-line bg-white shadow-panel;
+}
+
+.stat-card {
+  @apply panel p-5;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.news-link {
+  @apply transition hover:text-accent;
+}
