@@ -40,3 +40,4 @@ body {
 .news-link {
   @apply transition hover:text-accent;
 }
+

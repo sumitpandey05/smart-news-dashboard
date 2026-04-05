@@ -7,7 +7,7 @@ export default function ArticleCard({ article, onOpen, onToggleBookmark, isBookm
       <article className="border-b border-line py-4 last:border-b-0">
         <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
           <div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-900">
               <span>{article.category}</span>
               <span className={`rounded-full px-2 py-1 text-[10px] normal-case tracking-normal ${sentimentStyles[article.sentiment]}`}>
                 {article.sentiment}
@@ -16,8 +16,8 @@ export default function ArticleCard({ article, onOpen, onToggleBookmark, isBookm
             <button onClick={() => onOpen(article.id)} className="mt-2 text-left font-display text-xl leading-8 text-ink news-link">
               {article.title}
             </button>
-            <p className="mt-2 text-sm leading-6 text-stone-600">{article.excerpt}</p>
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-stone-500">
+            <p className="mt-2 text-sm leading-6 text-stone-800">{article.excerpt}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-stone-900">
               <span>{article.source}</span>
               <span>{formatDate(article.publishedAt)}</span>
               <span className="inline-flex items-center gap-1">
@@ -37,7 +37,7 @@ export default function ArticleCard({ article, onOpen, onToggleBookmark, isBookm
       <div className="grid gap-5 lg:grid-cols-[220px_1fr]">
         <img src={article.image} alt={article.title} className="h-48 w-full object-cover lg:h-full" />
         <div>
-          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-900">
             <span>{article.category}</span>
             <span className={`rounded-full px-2 py-1 text-[10px] normal-case tracking-normal ${sentimentStyles[article.sentiment]}`}>
               {article.sentiment}
@@ -46,8 +46,8 @@ export default function ArticleCard({ article, onOpen, onToggleBookmark, isBookm
           <button onClick={() => onOpen(article.id)} className="mt-3 text-left font-display text-2xl leading-9 text-ink news-link">
             {article.title}
           </button>
-          <p className="mt-3 text-sm leading-7 text-stone-600">{article.excerpt}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-stone-500">
+          <p className="mt-3 text-sm leading-7 text-stone-800">{article.excerpt}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-stone-900">
             <span>{article.source}</span>
             <span>{formatDate(article.publishedAt)}</span>
             <span className="inline-flex items-center gap-1">
@@ -61,7 +61,7 @@ export default function ArticleCard({ article, onOpen, onToggleBookmark, isBookm
             </button>
             <button
               onClick={() => onToggleBookmark(article.id)}
-              className={`inline-flex items-center gap-2 text-sm ${isBookmarked ? "text-accent" : "text-stone-600 hover:text-accent"}`}
+              className={`inline-flex items-center gap-2 text-sm ${isBookmarked ? "text-accent" : "text-stone-800 hover:text-accent"}`}
             >
               <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
               {isBookmarked ? "Saved" : "Save"}
@@ -72,3 +72,4 @@ export default function ArticleCard({ article, onOpen, onToggleBookmark, isBookm
     </article>
   );
 }
+

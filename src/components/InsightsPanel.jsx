@@ -23,16 +23,16 @@ export default function InsightsPanel({
     <aside className="space-y-6">
       <section className="panel p-5">
         <div className="border-b border-line pb-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Reader Metrics</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Reader Metrics</p>
           <h3 className="mt-2 font-display text-2xl text-ink">Your activity</h3>
         </div>
         <div className="grid grid-cols-2 gap-4 pt-4 text-sm">
           <div>
-            <p className="text-stone-500">Read this week</p>
+            <p className="text-stone-900">Read this week</p>
             <p className="mt-2 text-3xl font-bold text-ink">{historyCount}</p>
           </div>
           <div>
-            <p className="text-stone-500">Avg. read time</p>
+            <p className="text-stone-900">Avg. read time</p>
             <p className="mt-2 text-3xl font-bold text-ink">{averageReadTime}m</p>
           </div>
         </div>
@@ -40,11 +40,11 @@ export default function InsightsPanel({
 
       <section className="panel p-5">
         <div className="border-b border-line pb-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Trending Words</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Trending Words</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {keywordData.map((item) => (
-            <span key={item.keyword} className="border border-line px-3 py-2 text-sm capitalize text-stone-700">
+            <span key={item.keyword} className="border border-line px-3 py-2 text-sm capitalize text-stone-900">
               {item.keyword}
             </span>
           ))}
@@ -53,7 +53,7 @@ export default function InsightsPanel({
 
       <section className="panel p-5">
         <div className="border-b border-line pb-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Topic Momentum</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Topic Momentum</p>
         </div>
         <div className="mt-4 h-56">
           <ResponsiveContainer width="100%" height="100%">
@@ -73,7 +73,7 @@ export default function InsightsPanel({
 
       <section className="panel p-5">
         <div className="border-b border-line pb-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Category Share</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Category Share</p>
         </div>
         <div className="mt-4 h-56">
           <ResponsiveContainer width="100%" height="100%">
@@ -87,7 +87,7 @@ export default function InsightsPanel({
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-sm text-stone-700">
+        <div className="grid grid-cols-2 gap-2 text-sm text-stone-900">
           {categoryData.map((item, index) => (
             <div key={item.name} className="flex items-center gap-2">
               <span className="inline-block h-3 w-3" style={{ backgroundColor: categoryColors[index % categoryColors.length] }} />
@@ -99,3 +99,4 @@ export default function InsightsPanel({
     </aside>
   );
 }
+
