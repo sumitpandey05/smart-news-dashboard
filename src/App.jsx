@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Navbar from "./components/Navbar";
 import ArticleModal from "./components/ArticleModal";
 import HomePage from "./pages/HomePage";
@@ -11,28 +11,29 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [bookmarks, setBookmarks] = useLocalStorage("smart-news-bookmarks", []);
   const [history, setHistory] = useLocalStorage("smart-news-history", []);
-  const [selectedArticleId, setSelectedArticleId] = useState(null);
-
-  const selectedArticle = useMemo(
-    () => mockArticles.find((article) => article.id === selectedArticleId) || null,
-    [selectedArticleId]
-  );
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [articles, setArticles] = useState(mockArticles);
 
   function handleToggleBookmark(articleId) {
     setBookmarks((current) =>
-      current.includes(articleId) ? current.filter((id) => id !== articleId) : [articleId, ...current]
+      current.includes(articleId)
+        ? current.filter((id) => id !== articleId)
+        : [articleId, ...current]
     );
   }
 
-  function handleOpenArticle(articleId) {
+  function handleOpenArticle(article) {
+    if (!article) return;
+
+    setSelectedArticle(article);
+
     setHistory((current) => {
       const next = [
-        { id: articleId, viewedAt: new Date().toISOString() },
-        ...current.filter((item) => item.id !== articleId),
+        { id: article.id, viewedAt: new Date().toISOString() },
+        ...current.filter((item) => item.id !== article.id),
       ];
       return next.slice(0, 20);
     });
-    setSelectedArticleId(articleId);
   }
 
   return (
@@ -46,6 +47,8 @@ export default function App() {
             element={
               <HomePage
                 query={query}
+                articles={articles}
+                onArticlesLoaded={setArticles}
                 bookmarks={bookmarks}
                 onToggleBookmark={handleToggleBookmark}
                 history={history}
@@ -57,6 +60,7 @@ export default function App() {
             path="/bookmarks"
             element={
               <BookmarksPage
+                articles={articles}
                 bookmarks={bookmarks}
                 onToggleBookmark={handleToggleBookmark}
                 onOpenArticle={handleOpenArticle}
@@ -66,13 +70,14 @@ export default function App() {
         </Routes>
       </main>
 
-      <ArticleModal
-        article={selectedArticle}
-        isBookmarked={selectedArticle ? bookmarks.includes(selectedArticle.id) : false}
-        onClose={() => setSelectedArticleId(null)}
-        onToggleBookmark={handleToggleBookmark}
-      />
+      {selectedArticle && (
+        <ArticleModal
+          article={selectedArticle}
+          isBookmarked={bookmarks.includes(selectedArticle.id)}
+          onClose={() => setSelectedArticle(null)}
+          onToggleBookmark={handleToggleBookmark}
+        />
+      )}
     </div>
   );
 }
-

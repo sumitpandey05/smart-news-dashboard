@@ -1,9 +1,13 @@
 import { BookmarkX } from "lucide-react";
-import { mockArticles } from "../data/mockNews";
 import ArticleCard from "../components/ArticleCard";
 
-export default function BookmarksPage({ bookmarks, onToggleBookmark, onOpenArticle }) {
-  const savedArticles = mockArticles.filter((article) => bookmarks.includes(article.id));
+export default function BookmarksPage({
+  articles = [],
+  bookmarks,
+  onToggleBookmark,
+  onOpenArticle,
+}) {
+  const savedArticles = articles.filter((article) => bookmarks.includes(article.id));
 
   return (
     <section className="space-y-8">
@@ -39,4 +43,3 @@ export default function BookmarksPage({ bookmarks, onToggleBookmark, onOpenArtic
     </section>
   );
 }
-

@@ -1,7 +1,54 @@
+import { useEffect, useState } from "react";
 import { Bookmark, Clock3, X } from "lucide-react";
-import { sentimentStyles, formatDate } from "../utils/newsUtils";
+import { generateSummary } from "../utils/ai";
+import { formatDate, sentimentStyles } from "../utils/newsUtils";
 
-export default function ArticleModal({ article, isBookmarked, onClose, onToggleBookmark }) {
+export default function ArticleModal({
+  article,
+  isBookmarked,
+  onClose,
+  onToggleBookmark,
+}) {
+  const [aiData, setAiData] = useState({
+    summary: article?.summary || "",
+    takeaways: article?.takeaways || [],
+    simple: article?.simplified || "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!article) return;
+
+    let cancelled = false;
+
+    async function runAI() {
+      setAiData({
+        summary: article.summary || "",
+        takeaways: article.takeaways || [],
+        simple: article.simplified || "",
+      });
+
+      setLoading(true);
+      const res = await generateSummary(article);
+      if (!cancelled && res) {
+        setAiData({
+          summary: res.summary || article.summary || "",
+          takeaways: res.takeaways?.length ? res.takeaways : article.takeaways || [],
+          simple: res.simple || article.simplified || "",
+        });
+      }
+      if (!cancelled) {
+        setLoading(false);
+      }
+    }
+
+    runAI();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [article]);
+
   if (!article) {
     return null;
   }
@@ -11,10 +58,12 @@ export default function ArticleModal({ article, isBookmarked, onClose, onToggleB
       <div className="mx-auto max-w-5xl bg-paper shadow-2xl">
         <div className="flex items-center justify-between border-b border-line px-5 py-4 sm:px-8">
           <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">
-            <span>{article.category}</span>
-            <span className={`rounded-full px-2 py-1 text-[10px] normal-case tracking-normal ${sentimentStyles[article.sentiment]}`}>
-              {article.sentiment}
-            </span>
+            <span>{article.category || "General"}</span>
+            {article.sentiment ? (
+              <span className={`rounded-full px-2 py-1 text-[10px] normal-case tracking-normal ${sentimentStyles[article.sentiment]}`}>
+                {article.sentiment}
+              </span>
+            ) : null}
           </div>
           <button onClick={onClose} className="text-stone-900 hover:text-ink">
             <X className="h-5 w-5" />
@@ -25,25 +74,33 @@ export default function ArticleModal({ article, isBookmarked, onClose, onToggleB
           <div>
             <h2 className="font-display text-3xl leading-tight text-ink sm:text-4xl">{article.title}</h2>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-stone-900">
-              <span>{article.author}</span>
-              <span>{article.source}</span>
-              <span>{formatDate(article.publishedAt)}</span>
+              <span>{article.author || "Editorial Desk"}</span>
+              <span>{article.source || "Unknown source"}</span>
+              <span>{article.publishedAt ? formatDate(article.publishedAt) : "No date"}</span>
               <span className="inline-flex items-center gap-1">
                 <Clock3 className="h-4 w-4" />
-                {article.readMinutes} min read
+                {article.readMinutes || 5} min read
               </span>
             </div>
 
-            <img src={article.image} alt={article.title} className="mt-6 h-72 w-full object-cover sm:h-96" />
+            <img
+              src={article.image || "https://via.placeholder.com/800x500"}
+              alt={article.title}
+              className="mt-6 h-72 w-full object-cover sm:h-96"
+            />
 
             <div className="mt-6 border-l-4 border-accent pl-4">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">AI Summary</p>
-              <p className="mt-2 text-base leading-8 text-stone-900">{article.summary}</p>
+              <p className="mt-2 text-base leading-8 text-stone-900">
+                {loading ? "Generating summary..." : aiData.summary || "No summary available."}
+              </p>
             </div>
 
             <div className="mt-6">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Article Snapshot</p>
-              <p className="mt-3 text-[15px] leading-8 text-stone-900">{article.content}</p>
+              <p className="mt-3 text-[15px] leading-8 text-stone-900">
+                {article.content || article.excerpt || "No article content available."}
+              </p>
             </div>
           </div>
 
@@ -51,8 +108,8 @@ export default function ArticleModal({ article, isBookmarked, onClose, onToggleB
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Key Takeaways</p>
               <ul className="mt-3 space-y-3 text-sm leading-7 text-stone-900">
-                {article.takeaways.map((takeaway) => (
-                  <li key={takeaway} className="border-b border-line pb-3 last:border-b-0">
+                {(aiData.takeaways || []).map((takeaway, index) => (
+                  <li key={`${takeaway}-${index}`} className="border-b border-line pb-3 last:border-b-0">
                     {takeaway}
                   </li>
                 ))}
@@ -61,13 +118,15 @@ export default function ArticleModal({ article, isBookmarked, onClose, onToggleB
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Simplified Mode</p>
-              <p className="mt-3 text-sm leading-7 text-stone-900">{article.simplified}</p>
+              <p className="mt-3 text-sm leading-7 text-stone-900">{aiData.simple || ""}</p>
             </div>
 
             <button
               onClick={() => onToggleBookmark(article.id)}
               className={`inline-flex items-center gap-2 border px-4 py-3 text-sm font-semibold ${
-                isBookmarked ? "border-accent bg-accent text-white" : "border-line text-ink hover:border-accent hover:text-accent"
+                isBookmarked
+                  ? "border-accent bg-accent text-white"
+                  : "border-line text-ink hover:border-accent hover:text-accent"
               }`}
             >
               <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
@@ -79,4 +138,3 @@ export default function ArticleModal({ article, isBookmarked, onClose, onToggleB
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { categories, mockArticles } from "../data/mockNews";
 import CategoryFilter from "../components/CategoryFilter";
 import ArticleCard from "../components/ArticleCard";
@@ -10,46 +10,112 @@ const INITIAL_COUNT = 4;
 const LOAD_MORE_STEP = 3;
 
 export default function HomePage({
-  query,
-  bookmarks,
+  query = "",
+  articles = [],
+  onArticlesLoaded,
+  bookmarks = [],
   onToggleBookmark,
-  history,
+  history = [],
   onOpenArticle,
 }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const [loading, setLoading] = useState(false);
+
+  const apiKey = import.meta.env.VITE_NEWS_API_KEY;
+
+  useEffect(() => {
+    if (!apiKey) {
+      onArticlesLoaded?.(mockArticles);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchNews() {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `https://newsapi.org/v2/everything?q=india&apiKey=${apiKey}`
+        );
+        const data = await response.json();
+
+        const formatted = (data.articles || []).map((item, index) => ({
+          id: item?.url || `news-${index + 1}`,
+          title: item?.title || "Untitled article",
+          excerpt: item?.description || "",
+          content: item?.content || item?.description || "",
+          image: item?.urlToImage || "https://via.placeholder.com/800x500",
+          source: item?.source?.name || "Unknown",
+          author: item?.author || "Editorial Desk",
+          publishedAt: item?.publishedAt,
+          category: "General",
+          sentiment: "Neutral",
+          readMinutes: 5,
+          summary: item?.description || "",
+          takeaways: [],
+          simplified: "",
+        }));
+
+        if (!cancelled && formatted.length) {
+          onArticlesLoaded?.(formatted);
+        }
+      } catch (error) {
+        console.error(error);
+        if (!cancelled) {
+          onArticlesLoaded?.(mockArticles);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchNews();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiKey, onArticlesLoaded]);
+
+  const sourceArticles = articles.length ? articles : mockArticles;
 
   const filteredArticles = useMemo(() => {
-    return mockArticles.filter((article) => {
+    return sourceArticles.filter((article) => {
       const matchesCategory = activeCategory === "All" || article.category === activeCategory;
       const searchable = `${article.title} ${article.excerpt} ${article.category} ${article.source}`.toLowerCase();
       const matchesQuery = searchable.includes(query.toLowerCase());
       return matchesCategory && matchesQuery;
     });
-  }, [activeCategory, query]);
+  }, [activeCategory, query, sourceArticles]);
 
-  const leadArticle = filteredArticles[0] || mockArticles[0];
+  const leadArticle = filteredArticles[0] || sourceArticles[0];
   const leftColumnArticles = filteredArticles.slice(1, 5);
   const rightColumnArticles = filteredArticles.slice(5, 10);
   const feedArticles = filteredArticles.slice(0, visibleCount);
-  const editorsPicks = mockArticles.slice(2, 5);
+  const editorsPicks = sourceArticles.slice(2, 5);
 
-  const keywordData = useMemo(() => getKeywords(mockArticles), []);
-  const trendingTopics = useMemo(() => getTrendingTopics(mockArticles), []);
+  const keywordData = useMemo(() => getKeywords(sourceArticles), [sourceArticles]);
+  const trendingTopics = useMemo(() => getTrendingTopics(sourceArticles), [sourceArticles]);
   const historyArticles = useMemo(
-    () => history.map((item) => mockArticles.find((article) => article.id === item.id)).filter(Boolean),
-    [history]
+    () => history.map((item) => sourceArticles.find((article) => article.id === item.id)).filter(Boolean),
+    [history, sourceArticles]
   );
   const historyCount = history.filter(
     (item) => Date.now() - new Date(item.viewedAt).getTime() <= 7 * 24 * 60 * 60 * 1000
   ).length;
   const averageReadTime = historyArticles.length
-    ? Math.round(historyArticles.reduce((sum, article) => sum + article.readMinutes, 0) / historyArticles.length)
+    ? Math.round(historyArticles.reduce((sum, article) => sum + (article.readMinutes || 5), 0) / historyArticles.length)
     : 0;
   const categoryData = useMemo(
-    () => getCategoryCounts(historyArticles.length ? historyArticles : mockArticles),
-    [historyArticles]
+    () => getCategoryCounts(historyArticles.length ? historyArticles : sourceArticles),
+    [historyArticles, sourceArticles]
   );
+
+  if (!leadArticle && !loading) {
+    return <div className="py-10 text-center text-sm text-stone-900">No news found.</div>;
+  }
 
   return (
     <div className="space-y-10">
@@ -71,6 +137,8 @@ export default function HomePage({
           </div>
         </div>
 
+        {loading ? <div className="mb-6 text-sm text-stone-900">Loading latest news...</div> : null}
+
         <div className="grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
           <aside className="space-y-5 border-b border-line pb-6 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-6">
             <div>
@@ -80,7 +148,7 @@ export default function HomePage({
                   <div key={article.id} className="border-b border-line pb-4 last:border-b-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{article.category}</p>
                     <button
-                      onClick={() => onOpenArticle(article.id)}
+                      onClick={() => onOpenArticle?.(article)}
                       className="mt-2 text-left font-display text-xl leading-8 text-ink news-link"
                     >
                       {article.title}
@@ -109,7 +177,7 @@ export default function HomePage({
 
           <main>
             <article>
-              <button onClick={() => onOpenArticle(leadArticle.id)} className="block w-full text-left">
+              <button onClick={() => onOpenArticle?.(leadArticle)} className="block w-full text-left">
                 <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
                   {leadArticle.title}
                 </h1>
@@ -117,12 +185,12 @@ export default function HomePage({
               <p className="mt-4 text-base leading-8 text-stone-900">{leadArticle.excerpt}</p>
               <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-stone-900">
                 <span>{leadArticle.source}</span>
-                <span>{formatDate(leadArticle.publishedAt)}</span>
-                <span>{leadArticle.readMinutes} min read</span>
+                <span>{leadArticle.publishedAt ? formatDate(leadArticle.publishedAt) : "No date"}</span>
+                <span>{leadArticle.readMinutes || 5} min read</span>
               </div>
 
               <img
-                src={leadArticle.image}
+                src={leadArticle.image || "https://via.placeholder.com/800x500"}
                 alt={leadArticle.title}
                 className="mt-5 h-72 w-full object-cover sm:h-[460px]"
               />
@@ -171,13 +239,13 @@ export default function HomePage({
                       <span className="pt-1 text-xs font-semibold text-accent">0{index + 1}</span>
                       <div>
                         <button
-                          onClick={() => onOpenArticle(article.id)}
+                          onClick={() => onOpenArticle?.(article)}
                           className="text-left text-base font-semibold leading-7 text-ink news-link"
                         >
                           {article.title}
                         </button>
                         <p className="mt-1 text-xs text-stone-900">
-                          {article.category} • {article.readMinutes} min read
+                          {article.category} • {article.readMinutes || 5} min read
                         </p>
                       </div>
                     </div>
@@ -200,7 +268,7 @@ export default function HomePage({
       <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <HistoryPanel
           historyItems={history.slice(0, 5)}
-          getArticleById={(articleId) => mockArticles.find((article) => article.id === articleId)}
+          getArticleById={(articleId) => sourceArticles.find((article) => article.id === articleId)}
         />
 
         <section className="panel p-5">
@@ -223,4 +291,3 @@ export default function HomePage({
     </div>
   );
 }
-
