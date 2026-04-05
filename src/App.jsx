@@ -1,45 +1,48 @@
 import { Route, Routes } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Navbar from "./components/Navbar";
 import ArticleModal from "./components/ArticleModal";
 import HomePage from "./pages/HomePage";
 import BookmarksPage from "./pages/BookmarksPage";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import { mockArticles } from "./data/mockNews";
 
 export default function App() {
   const [query, setQuery] = useState("");
   const [bookmarks, setBookmarks] = useLocalStorage("smart-news-bookmarks", []);
   const [history, setHistory] = useLocalStorage("smart-news-history", []);
-  const [selectedArticleId, setSelectedArticleId] = useState(null);
-
-  const selectedArticle = useMemo(
-    () => mockArticles.find((article) => article.id === selectedArticleId) || null,
-    [selectedArticleId]
-  );
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   function handleToggleBookmark(articleId) {
     setBookmarks((current) =>
-      current.includes(articleId) ? current.filter((id) => id !== articleId) : [articleId, ...current]
+      current.includes(articleId)
+        ? current.filter((id) => id !== articleId)
+        : [articleId, ...current]
     );
   }
 
-  function handleOpenArticle(articleId) {
+  function handleOpenArticle(article) {
+    if (!article) return; // ✅ SAFETY
+
+    setSelectedArticle(article);
+
     setHistory((current) => {
       const next = [
-        { id: articleId, viewedAt: new Date().toISOString() },
-        ...current.filter((item) => item.id !== articleId),
+        { id: article.id, viewedAt: new Date().toISOString() },
+        ...current.filter((item) => item.id !== article.id),
       ];
       return next.slice(0, 20);
     });
-    setSelectedArticleId(articleId);
   }
 
   return (
     <div className="min-h-screen">
-      <Navbar query={query} setQuery={setQuery} bookmarkCount={bookmarks.length} />
+      <Navbar
+        query={query}
+        setQuery={setQuery}
+        bookmarkCount={bookmarks.length}
+      />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8">
         <Routes>
           <Route
             path="/"
@@ -53,6 +56,7 @@ export default function App() {
               />
             }
           />
+
           <Route
             path="/bookmarks"
             element={
@@ -66,12 +70,15 @@ export default function App() {
         </Routes>
       </main>
 
-      <ArticleModal
-        article={selectedArticle}
-        isBookmarked={selectedArticle ? bookmarks.includes(selectedArticle.id) : false}
-        onClose={() => setSelectedArticleId(null)}
-        onToggleBookmark={handleToggleBookmark}
-      />
+      {/* ✅ ONLY RENDER MODAL IF ARTICLE EXISTS */}
+      {selectedArticle && (
+        <ArticleModal
+          article={selectedArticle}
+          isBookmarked={bookmarks.includes(selectedArticle.id)}
+          onClose={() => setSelectedArticle(null)}
+          onToggleBookmark={handleToggleBookmark}
+        />
+      )}
     </div>
   );
 }
