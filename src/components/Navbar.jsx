@@ -1,4 +1,9 @@
-import { Bookmark, Menu, Search } from "lucide-react";
+import {
+  BarChart3,
+  Bookmark,
+  Menu,
+  Search,
+} from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 
 const navItems = ["Home", "World", "Business", "Technology", "AI", "Opinion"];
@@ -42,6 +47,10 @@ export default function Navbar({ query, setQuery, bookmarkCount }) {
                 className="w-44 bg-transparent text-sm outline-none placeholder:text-stone-400 lg:w-60"
               />
             </div>
+            <NavLink to="/analytics" className="inline-flex items-center gap-2 text-sm font-medium text-stone-900 hover:text-accent">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </NavLink>
             <NavLink to="/bookmarks" className="inline-flex items-center gap-2 text-sm font-medium text-stone-900 hover:text-accent">
               <Bookmark className="h-4 w-4" />
               Saved {bookmarkCount ? `(${bookmarkCount})` : ""}
@@ -73,4 +82,3 @@ export default function Navbar({ query, setQuery, bookmarkCount }) {
     </header>
   );
 }
-

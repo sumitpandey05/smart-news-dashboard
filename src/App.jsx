@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import ArticleModal from "./components/ArticleModal";
 import HomePage from "./pages/HomePage";
 import BookmarksPage from "./pages/BookmarksPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { mockArticles } from "./data/mockNews";
 
@@ -66,6 +67,10 @@ export default function App() {
                 onOpenArticle={handleOpenArticle}
               />
             }
+          />
+          <Route
+            path="/analytics"
+            element={<AnalyticsPage articles={articles} history={history} />}
           />
         </Routes>
       </main>

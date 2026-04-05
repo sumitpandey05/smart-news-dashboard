@@ -1,12 +1,16 @@
-const { buildPlaceholderResponse } = require("../utils/apiResponse");
+const { fetchNews } = require("../services/newsService");
 
-const getNews = (req, res) => {
-  res.status(200).json(
-    buildPlaceholderResponse("News controller ready for API integration", {
-      source: "newsService",
-      data: [],
-    })
-  );
+const getNews = async (req, res, next) => {
+  try {
+    const articles = await fetchNews();
+
+    res.status(200).json({
+      success: true,
+      data: articles,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {

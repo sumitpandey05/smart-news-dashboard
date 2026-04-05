@@ -1,6 +1,11 @@
-const dotenv = require("dotenv");
+let dotenv;
 
-dotenv.config();
+try {
+  dotenv = require("dotenv");
+  dotenv.config();
+} catch (error) {
+  console.warn("dotenv is not installed yet; using process.env defaults.");
+}
 
 module.exports = {
   port: process.env.PORT || 5000,

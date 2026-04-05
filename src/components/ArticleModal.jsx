@@ -86,7 +86,7 @@ export default function ArticleModal({
             <img
               src={article.image || "https://via.placeholder.com/800x500"}
               alt={article.title}
-              className="mt-6 h-72 w-full object-cover sm:h-96"
+              className="mt-6 max-h-[420px] w-full rounded-sm object-contain bg-stone-100"
             />
 
             <div className="mt-6 border-l-4 border-accent pl-4">

@@ -47,3 +47,9 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+node_modules
+server/node_modules
+dist
+.env
+server/.env
