@@ -1,33 +1,139 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Libre+Baskerville:wght@400;700&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Base Reset ────────────────────────────────────────────────────── */
 html {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
-  @apply min-h-screen bg-paper font-body text-ink antialiased;
+  @apply min-h-screen bg-paper font-body text-body antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245,158,11,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(99,102,241,0.04) 0%, transparent 50%);
 }
 
 #root {
   @apply min-h-screen;
 }
 
+/* ─── Selection ─────────────────────────────────────────────────────── */
 ::selection {
-  background: rgba(185, 28, 28, 0.15);
+  background: rgba(245, 158, 11, 0.25);
+  color: #f1ede6;
 }
 
+/* ─── Scrollbar ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-surface-3;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted;
+}
+
+/* ─── Typography ────────────────────────────────────────────────────── */
+.headline {
+  @apply font-display text-ink leading-tight tracking-tight;
+}
+
+.eyebrow {
+  @apply text-[10px] font-semibold uppercase tracking-[0.3em] text-muted font-mono;
+}
+
+/* ─── Panels / Cards ────────────────────────────────────────────────── */
 .panel {
-  @apply rounded-none border border-line bg-white shadow-panel;
+  @apply rounded-xl bg-surface border border-line shadow-panel;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 60%);
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 .stat-card {
   @apply panel p-5;
 }
 
+/* ─── Badges ────────────────────────────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide font-mono;
+}
+
+.badge-positive {
+  @apply badge bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20;
+}
+
+.badge-neutral {
+  @apply badge bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20;
+}
+
+.badge-negative {
+  @apply badge bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20;
+}
+
+/* ─── Category Pills ────────────────────────────────────────────────── */
+.category-pill {
+  @apply rounded-full border border-line px-3 py-1 text-xs font-medium text-soft transition-all duration-200;
+}
+
+.category-pill:hover {
+  @apply border-accent/50 text-accent bg-accent/5;
+}
+
+.category-pill-active {
+  @apply rounded-full border border-accent/60 bg-accent/10 px-3 py-1 text-xs font-medium text-accent;
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────── */
+.btn-primary {
+  @apply inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-paper transition-all duration-200;
+}
+
+.btn-primary:hover {
+  @apply bg-accent-dim shadow-glow-sm scale-[1.02];
+}
+
+.btn-ghost {
+  @apply inline-flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-soft transition-all duration-200;
+}
+
+.btn-ghost:hover {
+  @apply border-accent/50 text-accent bg-accent/5;
+}
+
+/* ─── Links ─────────────────────────────────────────────────────────── */
+.news-link {
+  @apply transition-colors duration-200;
+}
+
+.news-link:hover {
+  @apply text-accent;
+}
+
+/* ─── Divider with label ─────────────────────────────────────────────── */
+.section-header {
+  @apply flex items-center gap-3 pb-4 mb-6 border-b border-line;
+}
+
+.section-header .accent-bar {
+  @apply h-5 w-0.5 rounded-full bg-accent;
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────── */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -37,7 +143,71 @@ body {
   scrollbar-width: none;
 }
 
-.news-link {
-  @apply transition hover:text-accent;
+.glass {
+  @apply bg-surface/80 backdrop-blur-xl border border-line/60;
 }
 
+/* ─── Animations ────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease both;
+}
+
+/* staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+
+/* ─── Article image overlay ─────────────────────────────────────────── */
+.img-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.img-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15,15,18,0.7) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.img-overlay img {
+  @apply transition-transform duration-700 ease-out;
+}
+
+.img-overlay:hover img {
+  transform: scale(1.04);
+}
+
+/* ─── Lead Article ───────────────────────────────────────────────────── */
+.lead-headline {
+  @apply font-display font-bold text-ink leading-[1.08] tracking-tight;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+}
+
+/* ─── Recharts overrides ─────────────────────────────────────────────── */
+.recharts-cartesian-axis-tick text {
+  fill: #6b6b7e !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}

@@ -3,18 +3,29 @@ import { Bookmark, Clock3, X } from "lucide-react";
 import { generateSummary } from "../utils/ai";
 import { formatDate, sentimentStyles } from "../utils/newsUtils";
 
-export default function ArticleModal({
-  article,
-  isBookmarked,
-  onClose,
-  onToggleBookmark,
-}) {
+export default function ArticleModal({ article, isBookmarked, onClose, onToggleBookmark }) {
   const [aiData, setAiData] = useState({
     summary: article?.summary || "",
     takeaways: article?.takeaways || [],
     simple: article?.simplified || "",
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!article) return;
+
+    const handler = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [article, onClose]);
 
   useEffect(() => {
     if (!article) return;
@@ -29,12 +40,12 @@ export default function ArticleModal({
       });
 
       setLoading(true);
-      const res = await generateSummary(article);
-      if (!cancelled && res) {
+      const result = await generateSummary(article);
+      if (!cancelled && result) {
         setAiData({
-          summary: res.summary || article.summary || "",
-          takeaways: res.takeaways?.length ? res.takeaways : article.takeaways || [],
-          simple: res.simple || article.simplified || "",
+          summary: result.summary || article.summary || "",
+          takeaways: result.takeaways?.length ? result.takeaways : article.takeaways || [],
+          simple: result.simple || article.simplified || "",
         });
       }
       if (!cancelled) {
@@ -49,90 +60,119 @@ export default function ArticleModal({
     };
   }, [article]);
 
-  if (!article) {
-    return null;
-  }
+  if (!article) return null;
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-black/50 px-4 py-8">
-      <div className="mx-auto max-w-5xl bg-paper shadow-2xl">
-        <div className="flex items-center justify-between border-b border-line px-5 py-4 sm:px-8">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">
-            <span>{article.category || "General"}</span>
-            {article.sentiment ? (
-              <span className={`rounded-full px-2 py-1 text-[10px] normal-case tracking-normal ${sentimentStyles[article.sentiment]}`}>
-                {article.sentiment}
-              </span>
-            ) : null}
-          </div>
-          <button onClick={onClose} className="text-stone-900 hover:text-ink">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-40 animate-fadeIn">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
-        <div className="grid gap-8 p-5 sm:p-8 lg:grid-cols-[1.4fr_0.9fr]">
-          <div>
-            <h2 className="font-display text-3xl leading-tight text-ink sm:text-4xl">{article.title}</h2>
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-stone-900">
-              <span>{article.author || "Editorial Desk"}</span>
-              <span>{article.source || "Unknown source"}</span>
-              <span>{article.publishedAt ? formatDate(article.publishedAt) : "No date"}</span>
-              <span className="inline-flex items-center gap-1">
-                <Clock3 className="h-4 w-4" />
-                {article.readMinutes || 5} min read
-              </span>
+      <div className="relative z-10 flex h-full items-start justify-center overflow-y-auto px-4 py-8 sm:py-12">
+        <div className="w-full max-w-5xl animate-fadeUp overflow-hidden rounded-2xl border border-line bg-surface shadow-float">
+          <div className="flex items-center justify-between border-b border-line bg-surface-2 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <span className="eyebrow">{article.category || "General"}</span>
+              {article.sentiment ? (
+                <span className={sentimentStyles[article.sentiment]}>{article.sentiment}</span>
+              ) : null}
             </div>
-
-            <img
-              src={article.image || "https://via.placeholder.com/800x500"}
-              alt={article.title}
-              className="mt-6 max-h-[420px] w-full rounded-sm object-contain bg-stone-100"
-            />
-
-            <div className="mt-6 border-l-4 border-accent pl-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">AI Summary</p>
-              <p className="mt-2 text-base leading-8 text-stone-900">
-                {loading ? "Generating summary..." : aiData.summary || "No summary available."}
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Article Snapshot</p>
-              <p className="mt-3 text-[15px] leading-8 text-stone-900">
-                {article.content || article.excerpt || "No article content available."}
-              </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onToggleBookmark(article.id)}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-xs font-medium transition-all duration-200 ${
+                  isBookmarked
+                    ? "border-accent/40 bg-accent/10 text-accent"
+                    : "border-line text-muted hover:border-accent/40 hover:text-accent"
+                }`}
+              >
+                <Bookmark className={`h-3.5 w-3.5 ${isBookmarked ? "fill-current" : ""}`} />
+                {isBookmarked ? "Saved" : "Save"}
+              </button>
+              <button
+                onClick={onClose}
+                className="rounded-lg border border-line p-2 text-muted transition-all duration-200 hover:bg-surface-3 hover:text-soft"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
-          <aside className="space-y-6 border-t border-line pt-6 lg:border-l lg:border-t-0 lg:pt-0 lg:pl-8">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Key Takeaways</p>
-              <ul className="mt-3 space-y-3 text-sm leading-7 text-stone-900">
-                {(aiData.takeaways || []).map((takeaway, index) => (
-                  <li key={`${takeaway}-${index}`} className="border-b border-line pb-3 last:border-b-0">
-                    {takeaway}
-                  </li>
-                ))}
-              </ul>
+          <div className="grid gap-0 lg:grid-cols-[1.5fr_1fr]">
+            <div className="space-y-6 border-b border-line p-6 sm:p-8 lg:border-b-0 lg:border-r">
+              <div>
+                <h2 className="font-display text-2xl font-bold leading-tight text-ink sm:text-3xl lg:text-4xl">
+                  {article.title}
+                </h2>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono text-[11px] text-muted">
+                  <span className="font-medium text-soft">{article.author || "Editorial Desk"}</span>
+                  <span className="text-line">·</span>
+                  <span>{article.source || "Unknown source"}</span>
+                  <span className="text-line">·</span>
+                  <span>{article.publishedAt ? formatDate(article.publishedAt) : "No date"}</span>
+                  <span className="text-line">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock3 className="h-3 w-3" />
+                    {article.readMinutes || 5} min read
+                  </span>
+                </div>
+              </div>
+
+              <div className="img-overlay h-56 overflow-hidden rounded-xl bg-surface-2 sm:h-72">
+                <img
+                  src={article.image || "https://via.placeholder.com/800x500"}
+                  alt={article.title}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+
+              <div className="rounded-xl border border-accent/20 bg-accent/5 p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  <span className="eyebrow text-accent">AI Summary</span>
+                </div>
+                <p className="text-sm leading-relaxed text-body">
+                  {loading ? "Generating summary..." : aiData.summary || "No summary available."}
+                </p>
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="h-4 w-0.5 rounded-full bg-line" />
+                  <span className="eyebrow">Article Snapshot</span>
+                </div>
+                <p className="text-sm leading-relaxed text-soft">
+                  {article.content || article.excerpt || "No article content available."}
+                </p>
+              </div>
             </div>
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Simplified Mode</p>
-              <p className="mt-3 text-sm leading-7 text-stone-900">{aiData.simple || ""}</p>
-            </div>
+            <div className="space-y-8 p-6 sm:p-8">
+              <div>
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="h-4 w-0.5 rounded-full bg-accent" />
+                  <span className="eyebrow">Key Takeaways</span>
+                </div>
+                <ul className="space-y-3">
+                  {(aiData.takeaways || []).map((takeaway, index) => (
+                    <li key={`${takeaway}-${index}`} className="flex items-start gap-3 border-b border-line pb-3 last:border-b-0 last:pb-0">
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-surface-3 font-mono text-[9px] font-bold text-muted">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <p className="text-sm leading-relaxed text-body">{takeaway}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-            <button
-              onClick={() => onToggleBookmark(article.id)}
-              className={`inline-flex items-center gap-2 border px-4 py-3 text-sm font-semibold ${
-                isBookmarked
-                  ? "border-accent bg-accent text-white"
-                  : "border-line text-ink hover:border-accent hover:text-accent"
-              }`}
-            >
-              <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-              {isBookmarked ? "Saved to bookmarks" : "Save article"}
-            </button>
-          </aside>
+              <div className="rounded-xl border border-line bg-surface-2 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="h-4 w-0.5 rounded-full bg-soft" />
+                  <span className="eyebrow">Simplified Mode</span>
+                </div>
+                <p className="text-sm italic leading-relaxed text-soft">{aiData.simple || ""}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
