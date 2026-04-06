@@ -1,4 +1,4 @@
-import { BookmarkX } from "lucide-react";
+import { BookmarkX, Bookmark } from "lucide-react";
 import { mockArticles } from "../data/mockNews";
 import ArticleCard from "../components/ArticleCard";
 
@@ -6,25 +6,37 @@ export default function BookmarksPage({ bookmarks, onToggleBookmark, onOpenArtic
   const savedArticles = mockArticles.filter((article) => bookmarks.includes(article.id));
 
   return (
-    <section className="space-y-8">
-      <div className="border-b border-line pb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Saved Stories</p>
-        <h1 className="mt-2 font-display text-4xl text-ink">Bookmarks</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-800">
-          Stories are stored locally in the browser for this frontend-only version.
+    <section className="space-y-8 animate-fadeUp">
+      {/* ── Page header ── */}
+      <div className="border-b border-line pb-6">
+        <span className="eyebrow mb-2 block">Saved Stories</span>
+        <div className="flex items-end justify-between gap-4">
+          <h1 className="font-display text-4xl font-bold text-ink sm:text-5xl">Bookmarks</h1>
+          {savedArticles.length > 0 && (
+            <span className="rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 font-mono text-xs text-accent mb-1">
+              {savedArticles.length} saved
+            </span>
+          )}
+        </div>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
+          Stories are stored locally in your browser for this frontend-only version.
         </p>
       </div>
 
       {savedArticles.length === 0 ? (
-        <div className="panel p-10 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center border border-line text-stone-900">
-            <BookmarkX className="h-6 w-6" />
+        /* ── Empty state ── */
+        <div className="panel p-14 text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-line bg-surface-2">
+            <BookmarkX className="h-7 w-7 text-muted" />
           </div>
-          <h2 className="mt-4 font-display text-2xl text-ink">No saved stories</h2>
-          <p className="mt-2 text-sm text-stone-900">Use the save action on any article to keep it here.</p>
+          <h2 className="font-display text-2xl font-semibold text-ink mb-2">No saved stories yet</h2>
+          <p className="text-sm text-muted max-w-sm mx-auto leading-relaxed">
+            Browse the home page and click <strong className="text-soft">Save</strong> on any article to keep it here.
+          </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        /* ── Articles grid ── */
+        <div className="space-y-4 stagger">
           {savedArticles.map((article) => (
             <ArticleCard
               key={article.id}
@@ -39,4 +51,3 @@ export default function BookmarksPage({ bookmarks, onToggleBookmark, onOpenArtic
     </section>
   );
 }
-

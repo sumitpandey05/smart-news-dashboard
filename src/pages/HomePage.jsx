@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
+import { ArrowRight, Flame } from "lucide-react";
 import { categories, mockArticles } from "../data/mockNews";
 import CategoryFilter from "../components/CategoryFilter";
 import ArticleCard from "../components/ArticleCard";
 import InsightsPanel from "../components/InsightsPanel";
 import HistoryPanel from "../components/HistoryPanel";
-import { getCategoryCounts, getKeywords, getTrendingTopics, formatDate } from "../utils/newsUtils";
+import { getCategoryCounts, getKeywords, getTrendingTopics, formatDate, sentimentStyles } from "../utils/newsUtils";
 
 const INITIAL_COUNT = 4;
 const LOAD_MORE_STEP = 3;
@@ -52,36 +53,48 @@ export default function HomePage({
   );
 
   return (
-    <div className="space-y-10">
-      <section className="border-b border-line pb-8">
-        <div className="mb-6 border-b border-line pb-4">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div className="space-y-12">
+
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 1 — Front page coverage
+      ════════════════════════════════════════════════════════════════ */}
+      <section>
+        {/* Section header */}
+        <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-0.5 rounded-full bg-accent" />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Top Stories</p>
-              <h2 className="mt-2 font-display text-3xl text-ink">Front page coverage</h2>
+              <span className="eyebrow block mb-0.5">Top Stories</span>
+              <h2 className="font-display text-2xl font-bold text-ink">Front page coverage</h2>
             </div>
-            <CategoryFilter
-              categories={categories}
-              activeCategory={activeCategory}
-              setActiveCategory={(category) => {
-                setActiveCategory(category);
-                setVisibleCount(INITIAL_COUNT);
-              }}
-            />
           </div>
+          <CategoryFilter
+            categories={categories}
+            activeCategory={activeCategory}
+            setActiveCategory={(category) => {
+              setActiveCategory(category);
+              setVisibleCount(INITIAL_COUNT);
+            }}
+          />
         </div>
 
-        <div className="grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
-          <aside className="space-y-5 border-b border-line pb-6 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-6">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">In The News</p>
-              <div className="mt-4 space-y-4">
-                {leftColumnArticles.map((article) => (
-                  <div key={article.id} className="border-b border-line pb-4 last:border-b-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{article.category}</p>
+        {/* Three-column layout */}
+        <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_300px]">
+
+          {/* ── Left sidebar ── */}
+          <aside className="space-y-6">
+            {/* In The News */}
+            <div className="panel p-5">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-line">
+                <span className="eyebrow">In The News</span>
+              </div>
+              <div className="space-y-4">
+                {leftColumnArticles.map((article, i) => (
+                  <div key={article.id} className="group border-b border-line pb-4 last:border-b-0 last:pb-0">
+                    <span className="eyebrow text-accent mb-1 block">{article.category}</span>
                     <button
                       onClick={() => onOpenArticle(article.id)}
-                      className="mt-2 text-left font-display text-xl leading-8 text-ink news-link"
+                      className="text-left font-display text-base font-semibold leading-snug text-ink news-link group-hover:text-accent transition-colors"
                     >
                       {article.title}
                     </button>
@@ -90,9 +103,13 @@ export default function HomePage({
               </div>
             </div>
 
-            <div className="border-t border-line pt-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Editors' Picks</p>
-              <div className="mt-3">
+            {/* Editors' Picks */}
+            <div className="panel p-5">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-line">
+                <Flame className="h-3.5 w-3.5 text-accent" />
+                <span className="eyebrow">Editors' Picks</span>
+              </div>
+              <div>
                 {editorsPicks.map((article) => (
                   <ArticleCard
                     key={article.id}
@@ -107,85 +124,118 @@ export default function HomePage({
             </div>
           </aside>
 
-          <main>
-            <article>
-              <button onClick={() => onOpenArticle(leadArticle.id)} className="block w-full text-left">
-                <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
-                  {leadArticle.title}
-                </h1>
-              </button>
-              <p className="mt-4 text-base leading-8 text-stone-900">{leadArticle.excerpt}</p>
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-stone-900">
-                <span>{leadArticle.source}</span>
-                <span>{formatDate(leadArticle.publishedAt)}</span>
-                <span>{leadArticle.readMinutes} min read</span>
+          {/* ── Center: Lead + Feed ── */}
+          <main className="min-w-0">
+            {/* Hero article */}
+            <article className="group mb-8 animate-fadeUp">
+              {/* Hero image */}
+              <div className="img-overlay h-72 rounded-xl overflow-hidden sm:h-[420px]">
+                <img
+                  src={leadArticle.image}
+                  alt={leadArticle.title}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                />
+                {/* Overlay badge */}
+                <div className="absolute bottom-4 left-4 z-10 flex items-center gap-2">
+                  <span className="rounded-full bg-accent/90 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-paper backdrop-blur-sm">
+                    {leadArticle.category}
+                  </span>
+                  <span className={sentimentStyles[leadArticle.sentiment]}>
+                    {leadArticle.sentiment}
+                  </span>
+                </div>
               </div>
 
-              <img
-                src={leadArticle.image}
-                alt={leadArticle.title}
-                className="mt-5 h-72 w-full object-cover sm:h-[460px]"
-              />
+              <div className="mt-4">
+                <button
+                  onClick={() => onOpenArticle(leadArticle.id)}
+                  className="block w-full text-left"
+                >
+                  <h1 className="lead-headline text-3xl sm:text-4xl lg:text-[2.6rem] group-hover:text-accent transition-colors">
+                    {leadArticle.title}
+                  </h1>
+                </button>
+                <p className="mt-3 text-base leading-relaxed text-soft">{leadArticle.excerpt}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3 font-mono text-[11px] text-muted">
+                  <span>{leadArticle.source}</span>
+                  <span className="text-line">·</span>
+                  <span>{formatDate(leadArticle.publishedAt)}</span>
+                  <span className="text-line">·</span>
+                  <span>{leadArticle.readMinutes} min read</span>
+                </div>
+              </div>
             </article>
 
-            <div className="mt-8 border-t border-line pt-6">
-              <div className="space-y-6">
-                {feedArticles.length === 0 ? (
-                  <div className="py-10 text-sm text-stone-900">No articles match the current filters.</div>
-                ) : (
-                  feedArticles.map((article) => (
-                    <ArticleCard
-                      key={article.id}
-                      article={article}
-                      onOpen={onOpenArticle}
-                      onToggleBookmark={onToggleBookmark}
-                      isBookmarked={bookmarks.includes(article.id)}
-                    />
-                  ))
-                )}
-              </div>
-
-              {visibleCount < filteredArticles.length ? (
-                <div className="mt-6">
-                  <button
-                    onClick={() => setVisibleCount((count) => count + LOAD_MORE_STEP)}
-                    className="border border-line px-5 py-3 text-sm font-semibold text-ink hover:border-accent hover:text-accent"
-                  >
-                    Load more stories
-                  </button>
-                </div>
-              ) : null}
+            {/* Feed divider */}
+            <div className="flex items-center gap-3 mb-6 border-t border-line pt-6">
+              <div className="h-4 w-0.5 rounded-full bg-line" />
+              <span className="eyebrow">More Stories</span>
             </div>
+
+            {/* Article feed */}
+            <div className="space-y-4 stagger">
+              {feedArticles.length === 0 ? (
+                <div className="panel p-10 text-center">
+                  <p className="font-mono text-sm text-muted">No articles match the current filters.</p>
+                </div>
+              ) : (
+                feedArticles.map((article) => (
+                  <ArticleCard
+                    key={article.id}
+                    article={article}
+                    onOpen={onOpenArticle}
+                    onToggleBookmark={onToggleBookmark}
+                    isBookmarked={bookmarks.includes(article.id)}
+                  />
+                ))
+              )}
+            </div>
+
+            {/* Load more */}
+            {visibleCount < filteredArticles.length && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={() => setVisibleCount((count) => count + LOAD_MORE_STEP)}
+                  className="btn-ghost gap-2"
+                >
+                  Load more stories
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
           </main>
 
-          <aside className="space-y-6 border-t border-line pt-6 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
-            <section>
-              <div className="border-b border-line pb-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Latest</p>
-                <h3 className="mt-2 font-display text-2xl text-ink">Most recent</h3>
+          {/* ── Right sidebar ── */}
+          <aside className="space-y-6 min-w-0">
+            {/* Most Recent */}
+            <div className="panel p-5">
+              <div className="flex items-center gap-2 mb-5 pb-3 border-b border-line">
+                <span className="eyebrow">Latest</span>
+                <span className="ml-auto font-mono text-[9px] text-muted">Most recent</span>
               </div>
-              <div className="mt-4 space-y-4">
+              <div className="space-y-4">
                 {rightColumnArticles.map((article, index) => (
-                  <div key={article.id} className="border-b border-line pb-4 last:border-b-0">
-                    <div className="flex items-start gap-3">
-                      <span className="pt-1 text-xs font-semibold text-accent">0{index + 1}</span>
-                      <div>
-                        <button
-                          onClick={() => onOpenArticle(article.id)}
-                          className="text-left text-base font-semibold leading-7 text-ink news-link"
-                        >
-                          {article.title}
-                        </button>
-                        <p className="mt-1 text-xs text-stone-900">
-                          {article.category} � {article.readMinutes} min read
-                        </p>
-                      </div>
+                  <div key={article.id} className="group flex items-start gap-3 border-b border-line pb-4 last:border-b-0 last:pb-0">
+                    <span className="font-mono text-[10px] font-bold text-accent mt-1 flex-shrink-0 w-5">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0">
+                      <button
+                        onClick={() => onOpenArticle(article.id)}
+                        className="text-left text-sm font-semibold leading-snug text-ink news-link group-hover:text-accent transition-colors line-clamp-2"
+                      >
+                        {article.title}
+                      </button>
+                      <p className="mt-1.5 font-mono text-[10px] text-muted">
+                        {article.category} · {article.readMinutes} min read
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
 
+            {/* Insights */}
             <InsightsPanel
               keywordData={keywordData}
               trendingTopics={trendingTopics}
@@ -197,18 +247,24 @@ export default function HomePage({
         </div>
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 2 — History + Reading Notes
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <HistoryPanel
           historyItems={history.slice(0, 5)}
           getArticleById={(articleId) => mockArticles.find((article) => article.id === articleId)}
         />
 
-        <section className="panel p-5">
-          <div className="border-b border-line pb-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-900">Reading Notes</p>
-            <h3 className="mt-2 font-display text-2xl text-ink">Why this layout</h3>
+        <section className="panel p-6">
+          <div className="flex items-center gap-2 mb-5 pb-4 border-b border-line">
+            <div className="h-4 w-0.5 rounded-full bg-accent" />
+            <div>
+              <span className="eyebrow block mb-0.5">Reading Notes</span>
+              <h3 className="font-display text-xl font-semibold text-ink">Why this layout</h3>
+            </div>
           </div>
-          <div className="mt-4 space-y-4 text-sm leading-7 text-stone-900">
+          <div className="space-y-4 text-sm leading-relaxed text-soft">
             <p>
               The homepage is structured around a classic news-site hierarchy: supporting stories on the left,
               the main headline in the center, and updates plus analytics on the right.
@@ -223,4 +279,3 @@ export default function HomePage({
     </div>
   );
 }
-
