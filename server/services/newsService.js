@@ -9,23 +9,21 @@ function estimateReadMinutes(text = "") {
 }
 
 function mapArticle(item, index) {
-  const content = item.description || item.snippet || item.title || "";
+  const content = item.content || item.description || item.title || "";
 
   return {
-    id: item.uuid || item.url || `news-${index + 1}`,
+    id: item.url || `news-${index + 1}`,
     title: item.title || "Untitled article",
-    excerpt: item.description || item.snippet || "",
+    excerpt: item.description || "",
     content,
-    image: item.image_url || PLACEHOLDER_IMAGE,
-    source: item.source || "Unknown",
+    image: item.urlToImage || PLACEHOLDER_IMAGE,
+    source: item.source?.name || "Unknown",
     author: item.author || "Editorial Desk",
-    publishedAt: item.published_at || new Date().toISOString(),
-    category: item.categories?.[0]
-      ? item.categories[0].charAt(0).toUpperCase() + item.categories[0].slice(1)
-      : "General",
+    publishedAt: item.publishedAt || new Date().toISOString(),
+    category: "General",
     sentiment: "Neutral",
     readMinutes: estimateReadMinutes(content),
-    summary: item.description || item.snippet || "",
+    summary: item.description || "",
     takeaways: [],
     simplified: "",
     url: item.url || "",
@@ -37,16 +35,16 @@ const fetchNews = async () => {
     throw new Error("NEWS_API_KEY is missing in server environment variables");
   }
 
-  const response = await axios.get("https://api.thenewsapi.com/v1/news/top", {
+  const response = await axios.get("https://newsapi.org/v2/everything", {
     params: {
-      api_token: env.newsApiKey,
-      locale: "in",
+      q: "india",
       language: "en",
-      limit: 12,
+      pageSize: 12,
+      apiKey: env.newsApiKey,
     },
   });
 
-  const articles = response.data?.data || [];
+  const articles = response.data?.articles || [];
   return articles.map(mapArticle);
 };
 
